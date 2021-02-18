@@ -1,0 +1,6 @@
+from . import {{ name }}
+from flask import render_template
+
+@{{ name }}.route('/', methods=['GET'])
+def index():
+    return render_template('base.html' title="Hello World")

@@ -1,0 +1,18 @@
+from app import create_app
+from dotenv import load_dotenv
+import click
+
+load_dotenv()
+
+app = create_app()
+
+@app.shell_context_processor
+def make_shell_context():
+    a = 2
+    return {'a': a}
+
+@app.cli.command('test-command')
+@click.argument("option")
+def db_update(option):
+    # anything
+    pass

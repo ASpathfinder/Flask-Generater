@@ -1,0 +1,31 @@
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+db = SQLAlchemy()
+migrate = Migrate()
+
+def create_app(config_name=''):
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_object('app.config.Config')
+
+    import os
+    config_path = os.path.join(app.instance_path, 'config.py')
+    if not os.path.exists(app.instance_path):
+        os.makedirs(app.instance_path)
+        with open(config_path, 'w+') as f:
+            f.write('SECRET_KEY=\'' + os.urandom(24).hex() + '\'\n')
+    else:
+        if not os.path.exists(config_path):
+            with open(config_path, 'w+') as f:
+                f.write('SECRET_KEY=\'' + os.urandom(24).hex() + '\'\n')
+
+    app.config.from_pyfile(config_path)
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    {% for name in blueprint_names %}
+    from app.{{ name }} import {{ name }} as {{ name }}_blueprint
+    app.register_blueprint({{ name }}_blueprint)
+    {% endfor %}
+    return app
