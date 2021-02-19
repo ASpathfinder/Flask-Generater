@@ -88,4 +88,5 @@ class FlaskGenerater:
         print('Install requirements')
         os.chdir(self.root)
         subprocess.run(['activate.bat'], capture_output=False)
+        os.remove('activate.bat')
         print('Requirements installed')
