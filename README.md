@@ -2,7 +2,7 @@
 
 
 
-Flask 项目生成器
+Flask 项目生成器, 目前只适用于Windows
 
 ## 用法:
 
