@@ -1,5 +1,6 @@
 import os
 import jinja2
+import subprocess
 
 def template_loader(template_name):
     tmplt_loader = jinja2.FileSystemLoader('./templates')
@@ -37,7 +38,10 @@ class FlaskGenerater:
     def generate_files(self):
         project_manage_tmplt = template_loader('project_manage.txt')
         project_dotenv_tmplt = template_loader('project_dotenv.txt')
+        project_venv_activate_tmplt = template_loader('project_venv_activate.bat')
+        project_requirements_tmplt = template_loader('project_requirements.txt')
         app_init_tmplt = template_loader('app__init__.txt')
+        app_config_tmplt = template_loader('app_config.txt')
         app_model_tmplt = template_loader('app_model.txt')
         app_base_template_tmplt = template_loader('template_base.html')
         blueprint_init_tmplt = template_loader('blueprint__init__.txt')
@@ -49,8 +53,17 @@ class FlaskGenerater:
         with open(os.path.join(self.root, '.env'), 'w+') as f:
             f.write(project_dotenv_tmplt.render())
 
+        with open(os.path.join(self.root, 'activate.bat'), 'w+') as f:
+            f.write(project_venv_activate_tmplt.render(root_path=self.root))
+
+        with open(os.path.join(self.root, 'requirements.txt'), 'w+') as f:
+            f.write(project_requirements_tmplt.render())
+
         with open(os.path.join(self.app_path, '__init__.py'), 'w+') as f:
             f.write(app_init_tmplt.render(blueprint_names=self.blueprint_names))
+
+        with open(os.path.join(self.app_path, 'config.py'), 'w+') as f:
+            f.write(app_config_tmplt.render())
 
         with open(os.path.join(self.app_path, 'model.py'), 'w+') as f:
             f.write(app_model_tmplt.render())
@@ -63,3 +76,16 @@ class FlaskGenerater:
                 f.write(blueprint_init_tmplt.render(name=name))
             with open(os.path.join(self.blueprint_path[name], 'view.py'), 'w+') as f:
                 f.write(blueprint_view_tmplt.render(name=name))
+        print('Project Files Generated')
+
+    def create_venv(self):
+        print('Create venv')
+        os.chdir(self.root)
+        subprocess.run(['python', '-m', 'venv', 'venv'], capture_output=False)
+        print('Venv created')
+
+    def install_requirements(self):
+        print('Install requirements')
+        os.chdir(self.root)
+        subprocess.run(['activate.bat'], capture_output=False)
+        print('Requirements installed')

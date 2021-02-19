@@ -9,3 +9,5 @@ if __name__ == '__main__':
     gen = FlaskGenerater(root=project_root, blueprint_names=sys.argv[2:])
     gen.generate_dir_tree()
     gen.generate_files()
+    gen.create_venv()
+    gen.install_requirements()
