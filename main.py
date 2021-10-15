@@ -1,3 +1,4 @@
+import sys
 import os
 import jinja2
 import subprocess
@@ -17,6 +18,7 @@ class FlaskGenerater:
         self.static_path = None
         self.template_path = None
         self.instance_path = None
+        self.act_file_name = ''
 
     def tracing_makedirs(self, *args):
         path = os.path.join(*args)
@@ -38,7 +40,13 @@ class FlaskGenerater:
     def generate_files(self):
         project_manage_tmplt = template_loader('project_manage.txt')
         project_dotenv_tmplt = template_loader('project_dotenv.txt')
-        project_venv_activate_tmplt = template_loader('project_venv_activate.bat')
+        project_venv_activate_tmplt = None
+        if sys.platform == 'win32':
+            self.act_file_name = 'activate.bat'
+            project_venv_activate_tmplt = template_loader('project_venv_activate.bat')
+        elif sys.platform == 'linux':
+            self.act_file_name = 'activate.sh'
+            project_venv_activate_tmplt = template_loader('project_venv_activate.sh')
         project_requirements_tmplt = template_loader('project_requirements.txt')
         app_init_tmplt = template_loader('app__init__.txt')
         app_config_tmplt = template_loader('app_config.txt')
@@ -53,7 +61,11 @@ class FlaskGenerater:
         with open(os.path.join(self.root, '.env'), 'w+') as f:
             f.write(project_dotenv_tmplt.render())
 
-        with open(os.path.join(self.root, 'activate.bat'), 'w+') as f:
+        if not project_venv_activate_tmplt:
+            print("platform doesn't support")
+            return
+
+        with open(os.path.join(self.root, self.act_file_name), 'w+') as f:
             f.write(project_venv_activate_tmplt.render(root_path=self.root))
 
         with open(os.path.join(self.root, 'requirements.txt'), 'w+') as f:
@@ -87,6 +99,13 @@ class FlaskGenerater:
     def install_requirements(self):
         print('Install requirements')
         os.chdir(self.root)
-        subprocess.run(['activate.bat'], capture_output=False)
-        os.remove('activate.bat')
+        if sys.platform == 'win32':
+            subprocess.run([self.act_file_name], capture_output=False)
+        elif sys.platform == 'linux':
+            print(self.act_file_name)
+            subprocess.run(['source', self.act_file_name], shell=True, capture_output=False)
+        else:
+            print("platform doesn't support")
+            return
+        # os.remove(self.act_file_name)
         print('Requirements installed')
